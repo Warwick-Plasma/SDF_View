@@ -272,7 +272,7 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
         grid = var.grid
     else:
         grid = var.grid_mid
-        
+
     Y = var.data
     X = grid.data[0]
 
@@ -296,7 +296,7 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
     else:
         subplot.plot(X, Y, **kwargs)
 
-    subplot.set_xlabel(grid.labels[0] + 
+    subplot.set_xlabel(grid.labels[0] +
         ' $(' + sym_x + grid.units[0] + ')$')
     if set_ylabel:
         subplot.set_ylabel(var.name + ' $(' + sym_y + var.units + ')$')
@@ -874,7 +874,7 @@ def axis_offset(boxed=False):
     ax.set_ylabel(ylab)
 
     draw()
-    
+
 def add_variable(base,var,name=None,auto=None):
 #First do some basic sanity checking to make sure that var is an SDF
 #variable
@@ -890,17 +890,17 @@ def add_variable(base,var,name=None,auto=None):
             nameok=name is not None
         except:
             nameok=False
-        if not nameok:    
+        if not nameok:
             print("Variable must be a valid SDF library variable or derived variable")
             print("Object does not have a \"name\" parameter")
             return
-        
+
     try:
         temp=var.grid
         gridok=temp is not None
     except:
         gridok=False
-        
+
     if not gridok:
         print("Variable must be a valid SDF library variable or derived variable")
         print("Object does not have a \"grid\" parameter")
@@ -922,7 +922,7 @@ def add_variable(base,var,name=None,auto=None):
         else:
             print("Assignment of variable \""+name+ "\" completed")
     setattr(base,name,var)
-   
+
 pi = 3.141592653589793238462643383279503
 q0 = 1.602176565e-19
 m0 = 9.10938291e-31

@@ -45,38 +45,38 @@ class derived_variable(object):
         if (cache or self.alwayscache) and not self.nevercache:
             self._data=data
         return data
-    
+
     def set_data(self,value):
         self._data=value
-        
+
     def get_backingdata(self):
         return self._backingdata
-        
+
     def set_backingdata(self,value):
         self._data=None
         self._backingdata=value
-        
+
     def get_datafunction(self):
         return self._datafunction
-        
+
     def set_datafunction(self, value):
         self._data=None
         self._datafunction=value
-        
+
     def get_grid(self):
         return self._grid
-        
+
     def set_grid(self,value):
         self._data=None
         self._grid = value
-        
+
     def get_grid_mid(self):
         return self._grid_mid
-        
+
     def set_grid_mid(self,value):
         self._data=None
-        self._grid_mid = value        
-        
+        self._grid_mid = value
+
     data = property(get_data,set_data)
     backingdata = property(get_backingdata, set_backingdata)
     datafunction = property(get_datafunction, set_datafunction)
@@ -129,7 +129,7 @@ class derived_grid(object):
     backingdata = property(get_backingdata, set_backingdata)
     datafunction = property(get_datafunction, set_datafunction)
 
-            
+
 def _average(caller,backingdata,direction):
     return numpy.sum(backingdata.data,direction)/backingdata.dims[direction],True
 
@@ -138,22 +138,22 @@ def _sum(caller,backingdata,direction):
 
 def _abs_sq(caller,backingdata):
     return numpy.abs(numpy.square(backingdata.data)),False
-    
+
 def _slice(caller,backingdata,slice):
     return numpy.squeeze(backingdata.data[slice]),False
 
 def _multiply(caller,backingdata,secondarray):
     return numpy.multiply(backingdata.data,secondarray),False
-    
+
 def _divide(caller,backingdata,secondarray):
     return numpy.divide(backingdata.data,secondarray),False
-    
+
 def _add(caller,backingdata,secondarray):
     return numpy.add(backingdata.data,secondarray),False
-    
+
 def _subtract(caller,backingdata,secondarray):
     return numpy.subtract(backingdata.data,secondarray),False
-    
+
 def _arithmetic(base,secondarray,function,symbol,**kwargs):
     if 'name' in kwargs:
         name=kwargs['name']
@@ -211,7 +211,7 @@ def get_reduced_grid(basegrid,direction=[0,1]):
             direction=[direction]
         except:
             return None
-            
+
     ndims=len(basegrid.dims)
     begins=basegrid.extents[0:ndims]
     ends=basegrid.extents[ndims:2*ndims]
@@ -262,7 +262,7 @@ def trim_grid(basegrid,slices):
         print(numpy.shape(naxis))
         l=len(naxis)
         mins.append(numpy.min(naxis))
-        maxs.append(numpy.max(naxis))        
+        maxs.append(numpy.max(naxis))
         if (l != 1 or lag):
             ngrid.data[x]=naxis
             ngrid.dims[x]=l
@@ -286,13 +286,13 @@ def average(base,direction=0,**kwargs):
     #Get the actual dimensions of the final array
     dims=list(base.dims)
     del dims[direction]
-    
+
     #Produce an array of all remaining dimension indices and produce the grid
     rdims=range(0,len(base.dims))
     del rdims[direction]
     ngrid=get_reduced_grid(base.grid,direction=rdims)
     ngrid_mid=get_reduced_grid(base.grid_mid,direction=rdims)
-    
+
     #Use a lambda as a closure to call the actual average function
     l=lambda caller, backingdata, direction=direction: _average(caller,backingdata,direction)
 
@@ -316,13 +316,13 @@ def sum(base,direction=0,**kwargs):
     #Get the actual dimensions of the final array
     dims=list(base.dims)
     del dims[direction]
-    
+
     #Produce an array of all remaining dimension indices and produce the grid
     rdims=range(0,len(base.dims))
     del rdims[direction]
     ngrid=get_reduced_grid(base.grid,direction=rdims)
     ngrid_mid=get_reduced_grid(base.grid_mid,direction=rdims)
-    
+
     #Use a lambda as a closure to call the actual sum function
     l=lambda caller, backingdata, direction=direction: _sum(caller,backingdata,direction)
 
@@ -348,13 +348,13 @@ def abs_sq(base,**kwargs):
 def multiply(base,secondarray,**kwargs):
     dv=_arithmetic(base,secondarray,_multiply,'*',**kwargs)
     return dv
-    
-    
+
+
 def divide(base,secondarray,**kwargs):
     dv=_arithmetic(base,secondarray,_divide,'\\',**kwargs)
     return dv
-    
-    
+
+
 def add(base,secondarray,**kwargs):
     dv=_arithmetic(base,secondarray,_add,'+',**kwargs)
     return dv
@@ -383,7 +383,7 @@ def subarray(base,slices,name=None):
             end=base.dims[x]
         if (end-begin != 0):
             dims.append(end-begin)
-            
+
     ngrid=trim_grid(base.grid,slices)
     ngrid_mid=trim_grid(base.grid_mid,slices)
     subscripts=tuple_to_slice(slices)

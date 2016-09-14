@@ -43,7 +43,7 @@ class sdfview():
     plotwindow = None
     fig = None
     win = None
-    
+
     def abs_sqr_button(self) :
         base=self.current_data[self.listbox.get(ANCHOR)]
         dv=sd.abs_sq(base)
@@ -114,10 +114,10 @@ class sdfview():
         top.add(self.build_pack_button(top,text="Draw Figure", command=self.draw_button,anchor=NW))
         top.add(self.build_pack_button(top,text="Quit",command=self.quit_button,anchor=NW))
         top.add(self.build_pack_button(top,text="Abs Square",command=self.abs_sqr_button,anchor=NW))
-        top.add(self.build_pack_button(top,text="Average",command=self.average_button,anchor=NW))        
+        top.add(self.build_pack_button(top,text="Average",command=self.average_button,anchor=NW))
         top.add(Label(top,text="SDF Viewer Version 0.1"))
 
-        #Create the figure object and adjust the borders because matplot lib doesnt 
+        #Create the figure object and adjust the borders because matplot lib doesnt
         #do a good job by default
         self.fig = Figure()
         self.fig.subplots_adjust(bottom=0.4)
@@ -154,7 +154,7 @@ class sdfview():
         self.populate_listbox(self.current_data)
         return self.current_data
 
-    def __init__(self,alpha=None) : 
+    def __init__(self,alpha=None) :
         self.build_gui()
         if (alpha is not None) :
             if(type(alpha) == sdf.BlockList) :
