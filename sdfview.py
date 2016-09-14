@@ -25,11 +25,16 @@ except:
     exit()
 #Test for tkinter
 try:
-    import tkFileDialog
+    import tkFileDialog as tf
     from Tkinter import *
 except:
-    print("Unable to import the necessary parts of tkinter. Please install the TK library and the tkinter Python module")
-    exit()
+    try:
+        from tkinter import *
+        import tkinter.filedialog as tf
+    except:
+        print("Unable to import the necessary parts of tkinter.")
+        print("Please install the TK library and the tkinter Python module")
+        exit()
 #Test for skimage, but dont fail if it isnt available
 try:
     from skimage import measure
@@ -63,7 +68,7 @@ class sdfview():
         return
 
     def load_button(self) :
-        fname=tkFileDialog.askopenfilename(defaultextension=".sdf",filetypes=[('SDF file','*.sdf'),('All files','*.*')])
+        fname=tf.askopenfilename(defaultextension=".sdf",filetypes=[('SDF file','*.sdf'),('All files','*.*')])
         if (fname is None) :
             return
         self.fig.clear()
@@ -133,12 +138,12 @@ class sdfview():
 
     def populate_listbox(self,keylist) :
         self.listbox.delete(0,END)
-        for key,value in keylist.iteritems():
+        for key,value in keylist.items():
             self.listbox.insert(END,(value.name))
 
     def get_valid_keys(self,data) :
         keylist={}
-        for key, value in data.__dict__.iteritems():
+        for key, value in data.__dict__.items():
             if (type(value) == sdf.BlockPlainVariable and \
                 hasattr(value,'grid')): keylist[value.name]=value
         return keylist

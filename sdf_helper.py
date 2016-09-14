@@ -490,7 +490,7 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
         cbar = figure.colorbar(im, cax=cax)
         if (full or title) :
             cbar.set_label(var.name + ' $(' + var.units + ')$',fontsize='large',x=1.2)
-	figure.canvas.draw()
+    figure.canvas.draw()
 
     figure.tight_layout()
     figure.canvas.draw()
