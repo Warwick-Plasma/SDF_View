@@ -1,136 +1,170 @@
 #!/usr/bin/env python
 
-listbox = None
-current_data = None
-plotwindow = None
-fig = None
+#No try/catch on importing sys. If this doesnt work then you've got bigger problems
+import sys
+import math
+#Test for numpy
+try:
+    import numpy
+except:
+    print("Unable to import numpy. Please install it")
+    exit()
+#Test for matplotlib
+try:
+    import matplotlib
+    matplotlib.use('TkAgg')
+except:
+	print("Unable to import matplotlib. Please install it")
+#Test for sdf
+try:
+    import sdf_helper as sh
+    import sdf_derived as sd
+    import sdf
+except:
+    print("Unable to import the SDF reader modules. Please build these first")
+    exit()
+#Test for tkinter
+try:
+    import tkFileDialog
+    from Tkinter import *
+except:
+    print("Unable to import the necessary parts of tkinter. Please install the TK library and the tkinter Python module")
+    exit()
+#Test for skimage, but dont fail if it isnt available
+try:
+    from skimage import measure
+except:
+    print("Unable to import scikit-image (skimage) module. This is needed for 3D visualisation")
 
-def quit_button() :
-	exit()
-	return
+class sdfview():
 
-def load_button() :
-	fname=tkFileDialog.askopenfilename(defaultextension=".sdf",filetypes=[('SDF file','*.sdf'),('All files','*.*')])
-	if (fname is None) :
-		return
-	fig.clear()
-	load_datafile(fname)
-	return
+    listbox = None
+    current_data = None
+    plotwindow = None
+    fig = None
+    win = None
+    
+    def abs_sqr_button(self) :
+        base=self.current_data[self.listbox.get(ANCHOR)]
+        dv=sd.abs_sq(base)
+        self.current_data[dv.name]=dv
+        self.populate_listbox(self.current_data)
 
-def draw_button() :
-	data=current_data[listbox.get(ANCHOR)]
-	global plotwindow
-	global fig
-	fig.clear()
-        a = fig.add_subplot(111)
-        plotwindow = a
-	if(len(data.dims) == 1) :
-		draw_1d(data)
-	if(len(data.dims) == 2) :
-		draw_2d(data)
-	fig.canvas.draw()
-	return
 
-def draw_1d(data) : 
-	if(data.dims[0] == data.grid.dims[0]) :
-		grid=data.grid
-	else :
-		grid=data.grid_mid
-        plotwindow.plot(grid.data[0],data.data)
-	plotwindow.set_xlabel('x('+grid.units[0]+')')
-	plotwindow.set_ylabel(data.name.split("/")[1].strip() + '(' + data.units + ')')
-	return
+    def average_button(self) :
+        base=self.current_data[self.listbox.get(ANCHOR)]
+        dv=sd.average(base,direction=1)
+        self.current_data[dv.name]=dv
+        self.populate_listbox(self.current_data)
 
-def draw_2d(data) :
-	import numpy 
-        if(data.dims[0] == data.grid.dims[0]) :
-                gridx=data.grid
-        else :
-                gridx=data.grid_mid
-        if(data.dims[1] == data.grid.dims[1]) :
-                gridy=data.grid
-        else :
-                gridy=data.grid_mid
 
-        plotwindow.set_xlabel('x('+gridx.units[0]+')')
-        plotwindow.set_ylabel('y('+gridy.units[1]+')')
+    def quit_button(self) :
+        self.win.destroy()
+        return
 
-	zmin=numpy.amin(data.data)
-	zmax=numpy.amax(data.data)
-	pc=plotwindow.pcolorfast(gridx.data[1],gridy.data[0],data.data.transpose(),vmin=zmin,vmax=zmax)
-	
-	cb=plotwindow.figure.colorbar(pc,ticks=numpy.linspace(zmin,zmax,num=10).tolist())
-	cb.set_label((data.name.split("/")[1].strip() + '(' + data.units + ')'))
-	return
+    def load_button(self) :
+        fname=tkFileDialog.askopenfilename(defaultextension=".sdf",filetypes=[('SDF file','*.sdf'),('All files','*.*')])
+        if (fname is None) :
+            return
+        self.fig.clear()
+        self.load_datafile(fname)
 
-def build_gui() :
+    def draw_button(self) :
+        data=self.current_data[self.listbox.get(ANCHOR)]
+        self.fig.clear()
+        self.plotwindow = self.fig.add_subplot(111)
+        if(len(data.dims) == 1) :
+            sh.plot1d(data, figure=self.fig, subplot=self.plotwindow)
+        if(len(data.dims) == 2) :
+            sh.plot2d(data, figure=self.fig, subplot=self.plotwindow)
+        self.fig.subplots_adjust(bottom=0.2)
+        self.fig.canvas.draw()
 
-	import matplotlib
+    def build_pack_button(self, parent,**kwargs) :
+        b=Button(parent,kwargs)
+        b.pack(expand=0)
+        return b
 
-	from numpy import arange, sin, pi
-	from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+    def build_gui(self) :
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+        from matplotlib.figure import Figure
 
-	from matplotlib.figure import Figure
+        #Create the window
+        self.win=Tk()
+        self.win.title("SDF Viewer")
+        self.win.geometry('800x500')
 
-	win=Tk()
-	win.title("SDF Viewer")
-	win.geometry('800x500')
-	m1=PanedWindow(win,name='m1')
-	m1.pack(fill=BOTH, expand=1)
+        #Create the panel splitting the window left/right
+        left_right=PanedWindow(self.win)
+        left_right.pack(fill=BOTH, expand=1)
+        #Create the listbox and add it to the left right split
+        self.listbox = Listbox(left_right)
+        left_right.add(self.listbox)
 
-	left = Listbox(m1)
-	m1.add(left)
+        #Create the panel splitting the window vertically
+        top_bottom = PanedWindow(left_right, orient=VERTICAL)
+        left_right.add(top_bottom)
 
-	m2 = PanedWindow(m1, orient=VERTICAL)
-	m1.add(m2)
+        #Create the panel which will contain the buttons
+        top=PanedWindow(top_bottom, orient=HORIZONTAL)
+        top_bottom.add(top)
 
-	top=PanedWindow(m2, orient=HORIZONTAL)
-	m2.add(top)
-	top.add(Button(top,text="Open File",command=load_button))
-	top.add(Button(top,text="Draw Figure", command=draw_button))
-	top.add(Button(top,text="Quit",command=quit_button,anchor=E))
-	top.add(Label(top,text="SDF Viewer Version 0.1"))
+        #Add the buttons
+        top.add(self.build_pack_button(top,text="Open File",command=self.load_button,anchor=NW))
+        top.add(self.build_pack_button(top,text="Draw Figure", command=self.draw_button,anchor=NW))
+        top.add(self.build_pack_button(top,text="Quit",command=self.quit_button,anchor=NW))
+        top.add(self.build_pack_button(top,text="Abs Square",command=self.abs_sqr_button,anchor=NW))
+        top.add(self.build_pack_button(top,text="Average",command=self.average_button,anchor=NW))        
+        top.add(Label(top,text="SDF Viewer Version 0.1"))
 
-	global fig
-	fig = Figure(figsize=(1, 1), dpi=100)
-	fig.subplots_adjust(bottom=0.20,left=0.20)
+        #Create the figure object and adjust the borders because matplot lib doesnt 
+        #do a good job by default
+        self.fig = Figure()
+        self.fig.subplots_adjust(bottom=0.4)
 
-	canvas = FigureCanvasTkAgg(fig, master=m2)
-	toolbar = NavigationToolbar2TkAgg(canvas,m2)
-	toolbar.update()
-	canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
-	canvas.show()
-	m2.add(canvas.get_tk_widget())
-        
-	global listbox
-	listbox=left
-	return
+        #Get the reference to the canvas object and add it to the tk objects
+        canvas = FigureCanvasTkAgg(self.fig, master=top_bottom)
+        canvas._tkcanvas.pack(side=BOTTOM,expand=1)
+        top_bottom.add(canvas.get_tk_widget())
 
-def populate_listbox(keylist) :
-	global listbox
-	listbox.delete(0,END)
+        toolbar = NavigationToolbar2TkAgg(canvas,top_bottom)
+        toolbar.update()
+        canvas.show()
+
+    def populate_listbox(self,keylist) :
+        self.listbox.delete(0,END)
         for key,value in keylist.iteritems():
-                listbox.insert(END,(value.name))
-	return
+            self.listbox.insert(END,(value.name))
 
-def get_valid_keys(data) :
-	keylist={}
+    def get_valid_keys(self,data) :
+        keylist={}
+        for key, value in data.__dict__.iteritems():
+            if (type(value) == sdf.BlockPlainVariable and \
+                hasattr(value,'grid')): keylist[value.name]=value
+        return keylist
 
-	for key, value in data.__dict__.iteritems():
-        	if (type(value) == sdf.BlockPlainVariable and hasattr(value,'grid')): keylist[value.name]=value
-	return keylist
+    def load_datafile(self,filename) :
+        full_data = sh.getdata(filename,verbose=False)
+        self.current_data = self.get_valid_keys(full_data)
+        self.populate_listbox(self.current_data)
+        return self.current_data
 
-def load_datafile(filename) :
-	global current_data
-	full_data = sh.getdata(filename)
-	current_data = get_valid_keys(full_data)
-	populate_listbox(current_data)
-	return current_data
+    def import_data(self,full_data) :
+        self.current_data=self.get_valid_keys(full_data)
+        self.populate_listbox(self.current_data)
+        return self.current_data
 
-import sdf_helper as sh
-import sdf
-import tkFileDialog
-from Tkinter import *
+    def __init__(self,alpha=None) : 
+        self.build_gui()
+        if (alpha is not None) :
+            if(type(alpha) == sdf.BlockList) :
+                self.import_data(alpha)
+            else :
+                self.load_datafile(alpha)
+        mainloop()
 
-build_gui()
-mainloop()
+if __name__ == '__main__' :
+    if (len(sys.argv) > 1) :
+        dobj=sdfview(sys.argv[1])
+    else :
+        dobj=sdfview()
