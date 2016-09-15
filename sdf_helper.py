@@ -245,13 +245,13 @@ def oplot1d(*args, **kwargs):
     plot1d(*args, **kwargs)
 
 
-def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
+def plot1d(var, fmt=None, xdir=None, idx=-1, xscale=0, yscale=0, cgs=False,
            title=True, sym=True, set_ylabel=True, hold=False, subplot=None,
            figure=None, **kwargs):
     global data
     global x, y, mult_x, mult_y
 
-    if len(var.dims) != 1:
+    if len(var.dims) != 1 and len(var.dims) != 2:
         print("error: Not a 1d dataset")
         return
 
@@ -273,8 +273,31 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
     else:
         grid = var.grid_mid
 
-    Y = var.data
-    X = grid.data[0]
+    if len(var.dims) > 1:
+        if xdir is None:
+            if var.dims[1] < var.dims[0]:
+                xdir = 0
+            else:
+                xdir = 1
+        if xdir == 0:
+            if idx == -1:
+                idx = var.dims[1] / 2
+            s = [slice(None), idx]
+        else:
+            if idx == -1:
+                idx = var.dims[0] / 2
+            s = [idx, slice(None)]
+        Y = var.data[s]
+    else:
+        Y = var.data
+
+    if np.ndim(var.grid.data[0]) == 1:
+        X = grid.data[0]
+    else:
+        X = grid.data[xdir][s]
+
+    if xdir is None:
+        xdir = 0
 
     if xscale == 0:
         length = max(abs(X[0]), abs(X[-1]))
@@ -296,14 +319,15 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
     else:
         subplot.plot(X, Y, **kwargs)
 
-    subplot.set_xlabel(grid.labels[0] + ' $(' + sym_x + grid.units[0] + ')$')
+    subplot.set_xlabel(grid.labels[xdir] + ' $(' + sym_x +
+                       grid.units[xdir] + ')$')
     if set_ylabel:
         subplot.set_ylabel(var.name + ' $(' + sym_y + var.units + ')$')
 
     if title:
         subplot.set_title(get_title(), fontsize='large', y=1.03)
 
-    figure.tight_layout()
+    figure.set_tight_layout(True)
     figure.canvas.draw()
 
 
@@ -479,7 +503,11 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
     subplot.set_ylabel(var.grid.labels[i1] + ' $(' + sym_y +
                        var.grid.units[i1] + ')$')
     if full:
-        subplot.set_title(get_title(), fontsize='large', y=1.03)
+        subplot.set_title(var.name + ' $(' + var.units + ')$, ' + get_title(),
+                          fontsize='large', y=1.03)
+    elif title:
+        subplot.set_title(var.name + ' $(' + var.units + ')$',
+                          fontsize='large', y=1.03)
 
     subplot.axis('tight')
     if iso:
@@ -495,7 +523,7 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
                            fontsize='large', x=1.2)
     figure.canvas.draw()
 
-    figure.tight_layout()
+    figure.set_tight_layout(True)
     figure.canvas.draw()
 
 
