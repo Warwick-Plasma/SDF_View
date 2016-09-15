@@ -256,17 +256,17 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
         return
 
     if figure is None:
-        figure=gcf()
-	#Only clear the figure if one isn't supplied by the user
+        figure = gcf()
+	    # Only clear the figure if one isn't supplied by the user
         if not hold:
             try:
                 figure.clf()
             except:
                 pass
-    fig=figure
-    #Have to add subplot after clearing figure
+
+    # Have to add subplot after clearing figure
     if subplot is None:
-        subplot=figure.add_subplot(111)
+        subplot = figure.add_subplot(111)
 
     if var.dims[0] == var.grid.dims[0]:
         grid = var.grid
@@ -391,15 +391,16 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
                 cmap(np.linspace(low,high,256)))
 
     if figure is None:
-        figure=gcf()
+        figure = gcf()
         if not hold:
             try:
                 figure.clf()
             except:
                 pass
+
     if subplot is None:
-        subplot=figure.add_subplot(111)
-    fig=figure
+        subplot = figure.add_subplot(111)
+
     if iso is None:
         iso = get_default_iso(data)
 
@@ -875,53 +876,63 @@ def axis_offset(boxed=False):
 
     draw()
 
-def add_variable(base,var,name=None,auto=None):
-#First do some basic sanity checking to make sure that var is an SDF
-#variable
+
+def add_variable(base, var, name=None, auto=None):
+    # First do some basic sanity checking to make sure that var is an
+    # SDF variable
     if base is None:
         print("Base SDF collection is None")
         return
     if var is None:
         print("Variable to be added is None")
         return
+
     if name is None:
         try:
-            name=var.name
-            nameok=name is not None
+            name = var.name
+            nameok = name is not None
         except:
-            nameok=False
+            nameok = False
         if not nameok:
-            print("Variable must be a valid SDF library variable or derived variable")
+            print("Variable must be a valid SDF library variable or derived " +
+                  "variable")
             print("Object does not have a \"name\" parameter")
             return
 
     try:
-        temp=var.grid
-        gridok=temp is not None
+        temp = var.grid
+        gridok = temp is not None
     except:
-        gridok=False
+        gridok = False
 
     if not gridok:
-        print("Variable must be a valid SDF library variable or derived variable")
+        print("Variable must be a valid SDF library variable or derived " +
+              "variable")
         print("Object does not have a \"grid\" parameter")
         return
 
-    name=name.replace(" ","_")
-    name=name.replace("/","_")
-    name=name.replace("+","_plus_")
-    name=name.replace("+","_minus_")
-    name=name.replace("*","_times_")
-    name=name.replace("\\","_divide_")
-    if hasattr(base,name) and auto != "overwrite":
+    name = name.replace(" ", "_")
+    name = name.replace("/", "_")
+    name = name.replace("+", "_plus_")
+    name = name.replace("+", "_minus_")
+    name = name.replace("*", "_times_")
+    name = name.replace("\\", "_divide_")
+
+    if hasattr(base, name) and auto != "overwrite":
         if auto == "cancel": return
-        print("***Warning*** variable \"" + name + "\" already exists in the collection")
-        val=raw_input("Are you sure that you want to overwrite? (Y/N) :")
+
+        print("***Warning*** variable \"" + name +
+              "\" already exists in the collection")
+        val = raw_input("Are you sure that you want to overwrite? (Y/N) :")
+
         if val.upper().strip() == "N":
             print("Assignment of variable \"" +name+ "\" cancelled")
             return
         else:
             print("Assignment of variable \""+name+ "\" completed")
-    setattr(base,name,var)
+
+    setattr(base, name, var)
+
 
 pi = 3.141592653589793238462643383279503
 q0 = 1.602176565e-19
