@@ -1,6 +1,5 @@
-import sdf
-import sdf_helper as sh
 import numpy
+
 
 class derived_variable(object):
     _data = None
@@ -141,8 +140,8 @@ class derived_grid(object):
 
 
 def _average(caller, backingdata, direction):
-    return numpy.sum(backingdata.data, direction) / backingdata.dims[direction],
-           True
+    return numpy.sum(backingdata.data, direction) \
+               / backingdata.dims[direction], True
 
 
 def _sum(caller, backingdata, direction):
@@ -197,12 +196,11 @@ def _arithmetic(base, secondarray, function, symbol, **kwargs):
     kwargs['name'] = name
     # Check if have SDF object or bare array
     try:
-        temp = secondarray.name
-        l = lambda caller, backingdata, a2=secondarray.data:
-                function(caller, backingdata, a2)
+        def l(caller, backingdata, a2=secondarray.data):
+            function(caller, backingdata, a2)
     except:
-        l = lambda caller, backingdata, a2=secondarray:
-                function(caller, backingdata, a2)
+        def l(caller, backingdata, a2=secondarray):
+            function(caller, backingdata, a2)
 
     # Finally create the actual derived variable and return it
     dv = derived_variable(datafunction=l, backingdata=base, grid=base.grid,
@@ -226,10 +224,10 @@ def is_lagrangian(var):
 
 # This routine takes a grid object and crops out directions that are not listed
 # in the "direction" collection. Returns a new grid object
-def get_reduced_grid(basegrid, direction=[0,1]):
+def get_reduced_grid(basegrid, direction=[0, 1]):
     ngrid = derived_grid(None)
     try:
-        temp = direction[0]
+        ndims = direction[0]
     except:
         try:
             direction = [direction]
@@ -241,7 +239,6 @@ def get_reduced_grid(basegrid, direction=[0,1]):
     ends = basegrid.extents[ndims:2*ndims]
     nbegin = []
     nend = []
-    slices = []
     ngrid.data_length = basegrid.data_length
     ngrid.datatype = basegrid.datatype
     ngrid.geometry = basegrid.geometry
@@ -319,8 +316,8 @@ def average(base, direction=0, **kwargs):
     ngrid_mid = get_reduced_grid(base.grid_mid, direction=rdims)
 
     # Use a lambda as a closure to call the actual average function
-    l = lambda caller, backingdata, direction=direction:
-            _average(caller, backingdata, direction)
+    def l(caller, backingdata, direction=direction):
+        _average(caller, backingdata, direction)
 
     # Finally create the actual derived variable and return it
     dv = derived_variable(name=name, datafunction=l, backingdata=base,
@@ -350,8 +347,8 @@ def sum(base, direction=0, **kwargs):
     ngrid_mid = get_reduced_grid(base.grid_mid, direction=rdims)
 
     # Use a lambda as a closure to call the actual sum function
-    l = lambda caller, backingdata, direction=direction:
-            _sum(caller, backingdata, direction)
+    def l(caller, backingdata, direction=direction):
+        _sum(caller, backingdata, direction)
 
     # Finally create the actual derived variable and return it
     dv = derived_variable(name=name, datafunction=l, backingdata=base,
@@ -417,7 +414,8 @@ def subarray(base, slices, name=None):
     subscripts = tuple_to_slice(slices)
     if name is None:
         name = 'Slice(' + base.name + ')'
-    l = lambda caller, backingdata, a2=subscripts:
+
+    def l(caller, backingdata, a2=subscripts):
         _slice(caller, backingdata, a2)
     # Finally create the actual derived variable and return it
     dv = derived_variable(name, datafunction=l, backingdata=base, grid=ngrid,

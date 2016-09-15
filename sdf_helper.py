@@ -256,8 +256,8 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
         return
 
     if figure is None:
-        figure = gcf()
-	    # Only clear the figure if one isn't supplied by the user
+        figure = plt.gcf()
+        # Only clear the figure if one isn't supplied by the user
         if not hold:
             try:
                 figure.clf()
@@ -277,13 +277,13 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
     X = grid.data[0]
 
     if xscale == 0:
-        length = max(abs(X[0]),abs(X[-1]))
+        length = max(abs(X[0]), abs(X[-1]))
         mult_x, sym_x = get_si_prefix(length)
     else:
         mult_x, sym_x = get_si_prefix(xscale)
 
     if yscale == 0:
-        length = max(abs(Y[0]),abs(Y[-1]))
+        length = max(abs(Y[0]), abs(Y[-1]))
         mult_y, sym_y = get_si_prefix(length)
     else:
         mult_y, sym_y = get_si_prefix(yscale)
@@ -296,8 +296,7 @@ def plot1d(var, fmt=None, xscale=0, yscale=0, cgs=False,
     else:
         subplot.plot(X, Y, **kwargs)
 
-    subplot.set_xlabel(grid.labels[0] +
-        ' $(' + sym_x + grid.units[0] + ')$')
+    subplot.set_xlabel(grid.labels[0] + ' $(' + sym_x + grid.units[0] + ')$')
     if set_ylabel:
         subplot.set_ylabel(var.name + ' $(' + sym_y + var.units + ')$')
 
@@ -332,29 +331,29 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
                     ix = var.dims[0] / 2
                 i0 = 1
                 i1 = 2
-                ss = [ix,si,sj]
+                ss = [ix, si, sj]
             else:
                 if ix < 0:
                     ix = var.dims[2] / 2
                 i0 = 0
                 i1 = 2
-                ss = [si,sj,ix]
+                ss = [si, sj, ix]
         elif iy is not None:
             if iy < 0:
                 iy = var.dims[1] / 2
             i0 = 0
             i1 = 2
-            ss = [si,iy,sj]
+            ss = [si, iy, sj]
             if iz is not None:
                 i0 = 0
                 i1 = 1
-                ss = [si,iy,sj]
+                ss = [si, iy, sj]
         elif iz is not None:
             if iz < 0:
                 iz = var.dims[2] / 2
             i0 = 0
             i1 = 1
-            ss = [si,sj,iz]
+            ss = [si, sj, iz]
         else:
             print("error: Not a 2d dataset")
             return
@@ -366,7 +365,7 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
     else:
         i2 = i0 + 2
         i3 = i1 + 2
-        ss = [si,sj]
+        ss = [si, sj]
 
     var_data = var.data[ss]
     if np.ndim(x) == 1:
@@ -376,7 +375,7 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
         x = var.grid.data[i0][ss]
         y = var.grid.data[i1][ss]
 
-    cmap = get_cmap()
+    cmap = plt.get_cmap()
     if norm is not None:
         v0 = np.min(var_data) - norm
         v1 = np.max(var_data) - norm
@@ -387,11 +386,11 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
             low = 0.5 * (1 + v0/v1)
             high = 1.0
 
-        cmap = cm.colors.LinearSegmentedColormap.from_list('tr',
-                cmap(np.linspace(low,high,256)))
+        cmap = plt.colors.LinearSegmentedColormap.from_list(
+            'tr', cmap(np.linspace(low, high, 256)))
 
     if figure is None:
-        figure = gcf()
+        figure = plt.gcf()
         if not hold:
             try:
                 figure.clf()
@@ -406,20 +405,20 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
 
     ext = list(var.grid.extents)
     if xscale == 0:
-        length = max(abs(ext[i2]),abs(ext[i0]))
+        length = max(abs(ext[i2]), abs(ext[i0]))
         mult_x, sym_x = get_si_prefix(length)
     else:
         mult_x, sym_x = get_si_prefix(xscale)
 
     if yscale == 0:
-        length = max(abs(ext[i3]),abs(ext[i1]))
+        length = max(abs(ext[i3]), abs(ext[i1]))
         mult_y, sym_y = get_si_prefix(length)
     else:
         mult_y, sym_y = get_si_prefix(yscale)
 
     if vrange == 1:
         v = np.max(abs(var_data))
-        vrange = [-v,v]
+        vrange = [-v, v]
 
     if fast:
         if reflect == 1:
@@ -460,11 +459,12 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
         ext[i1] = ext[i2]
         ext[i2] = e
         if vrange is None:
-            im = subplot.imshow(var_data.T, interpolation='none', origin='lower',
-                        extent=ext, cmap=cmap)
+            im = subplot.imshow(var_data.T, interpolation='none',
+                                origin='lower', extent=ext, cmap=cmap)
         else:
-            im = subplot.imshow(var_data, interpolation='none', origin='lower',
-                        extent=ext, cmap=cmap, vmin=vrange[0], vmax=vrange[1])
+            im = subplot.imshow(var_data, interpolation='none',
+                                origin='lower', extent=ext, cmap=cmap,
+                                vmin=vrange[0], vmax=vrange[1])
     else:
         X = np.multiply(mult_x, X)
         Y = np.multiply(mult_y, Y)
@@ -472,13 +472,14 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
             im = subplot.pcolormesh(X, Y, var_data, cmap=cmap)
         else:
             im = subplot.pcolormesh(X, Y, var_data, cmap=cmap,
-                            vmin=vrange[0], vmax=vrange[1])
+                                    vmin=vrange[0], vmax=vrange[1])
 
-    subplot.set_xlabel(var.grid.labels[i0] + ' $(' + sym_x + var.grid.units[i0] + ')$')
-    subplot.set_ylabel(var.grid.labels[i1] + ' $(' + sym_y + var.grid.units[i1] + ')$')
+    subplot.set_xlabel(var.grid.labels[i0] + ' $(' + sym_x +
+                       var.grid.units[i0] + ')$')
+    subplot.set_ylabel(var.grid.labels[i1] + ' $(' + sym_y +
+                       var.grid.units[i1] + ')$')
     if full:
-        subplot.set_title(get_title(),
-                  fontsize='large', y=1.03)
+        subplot.set_title(get_title(), fontsize='large', y=1.03)
 
     subplot.axis('tight')
     if iso:
@@ -489,8 +490,9 @@ def plot2d(var, iso=None, fast=None, title=False, full=True, vrange=None,
         divider = make_axes_locatable(ca)
         cax = divider.append_axes("right", "5%", pad="3%")
         cbar = figure.colorbar(im, cax=cax)
-        if (full or title) :
-            cbar.set_label(var.name + ' $(' + var.units + ')$',fontsize='large',x=1.2)
+        if (full or title):
+            cbar.set_label(var.name + ' $(' + var.units + ')$',
+                           fontsize='large', x=1.2)
     figure.canvas.draw()
 
     figure.tight_layout()
@@ -510,7 +512,7 @@ def plot_levels(var, r0=None, r1=None, nl=10, iso=None, out=False,
     global data
 
     try:
-        clf()
+        plt.clf()
     except:
         pass
 
@@ -536,12 +538,12 @@ def plot_levels(var, r0=None, r1=None, nl=10, iso=None, out=False,
 
     rl = r0 + 1.0 * (r1 - r0) * np.array(range(nl)) / (nl - 1)
 
-    fig = gcf()
+    fig = plt.gcf()
     if out:
-        gs = GridSpec(1, 1)  # , width_ratios=[8, 1])
-        ax = subplot(gs[0])
+        gs = plt.GridSpec(1, 1)  # , width_ratios=[8, 1])
+        ax = plt.subplot(gs[0])
     else:
-        ax = gca()
+        ax = plt.gca()
 
     cs = ax.contour(X, Y, var.data, levels=rl, colors='k', linewidths=0.5)
 
@@ -581,7 +583,7 @@ def plot_levels(var, r0=None, r1=None, nl=10, iso=None, out=False,
         t.set_clip_on(False)
         ax.add_artist(t)
 
-        clabel(cs, cs.levels, fmt=fmt, inline_spacing=2, fontsize=8)
+        plt.clabel(cs, cs.levels, fmt=fmt, inline_spacing=2, fontsize=8)
 
     ax.set_xlabel(var.grid.labels[0] + ' $(' + var.grid.units[0] + ')$')
     ax.set_ylabel(var.grid.labels[1] + ' $(' + var.grid.units[1] + ')$')
@@ -589,15 +591,15 @@ def plot_levels(var, r0=None, r1=None, nl=10, iso=None, out=False,
     if title:
         if out:
             # suptitle(get_title(), fontsize='large')
-            suptitle(get_title(), fontsize='large', y=0.92)
+            plt.suptitle(get_title(), fontsize='large', y=0.92)
         else:
             plt.title(get_title(), fontsize='large', y=1.03)
 
-    axis('tight')
+    plt.axis('tight')
     if iso:
-        axis('image')
+        plt.axis('image')
 
-    draw()
+    plt.draw()
     if out:
         gs.tight_layout(fig, rect=[0, -0.01, 0.95, 0.92])
         # fw = fig.get_window_extent().width
@@ -608,7 +610,7 @@ def plot_levels(var, r0=None, r1=None, nl=10, iso=None, out=False,
         # ax.set_position([box.x0, box.y0, box.width + bw, box.height])
     else:
         fig.set_tight_layout(True)
-    draw()
+    plt.draw()
 
 
 def plot_contour(var, r0=None, r1=None, nl=10, iso=None, title=True):
@@ -801,12 +803,12 @@ def ogrid(skip=None):
         X, Y = np.meshgrid(x, y)
     else:
         s = slice(None, None, skip)
-        X = x[s,s]
-        Y = y[s,s]
+        X = x[s, s]
+        Y = y[s, s]
     X = np.multiply(mult_x, X)
     Y = np.multiply(mult_y, Y)
-    plot(X, Y, color='k', lw=0.5)
-    plot(X.transpose(), Y.transpose(), color='k', lw=0.5, hold=True)
+    plt.plot(X, Y, color='k', lw=0.5)
+    plt.plot(X.transpose(), Y.transpose(), color='k', lw=0.5, hold=True)
 
 
 def plotgrid(fname=None, iso=None, title=True):
@@ -820,7 +822,7 @@ def plotgrid(fname=None, iso=None, title=True):
 
     ogrid()
 
-    ax = gca()
+    ax = plt.gca()
 
     ax.set_xlabel(grid.labels[0] + ' $(' + grid.units[0] + ')$')
     ax.set_ylabel(grid.labels[1] + ' $(' + grid.units[1] + ')$')
@@ -828,19 +830,19 @@ def plotgrid(fname=None, iso=None, title=True):
     if title:
         plt.title(get_title(), fontsize='large', y=1.03)
 
-    axis('tight')
+    plt.axis('tight')
     if iso:
-        axis('image')
+        plt.axis('image')
 
-    draw()
+    plt.draw()
 
-    fig = gcf()
+    fig = plt.gcf()
     fig.set_tight_layout(True)
-    draw()
+    plt.draw()
 
 
 def axis_offset(boxed=False):
-    ax = gca()
+    ax = plt.gca()
     xlab = ax.get_xlabel()
     ylab = ax.get_ylabel()
 
@@ -854,8 +856,8 @@ def axis_offset(boxed=False):
         # l.set_clip_on(False)
 
     if boxed:
-        r = matplotlib.patches.Rectangle((-f, -f), 1+2*f, 1+2*f,
-                                         transform=ax.transAxes)
+        r = plt.matplotlib.patches.Rectangle((-f, -f), 1+2*f, 1+2*f,
+                                             transform=ax.transAxes)
         r.set_color((0, 0, 0, 0))
         r.set_edgecolor('k')
         r.set_clip_on(False)
@@ -874,7 +876,7 @@ def axis_offset(boxed=False):
     ax.set_xlabel(xlab)
     ax.set_ylabel(ylab)
 
-    draw()
+    plt.draw()
 
 
 def add_variable(base, var, name=None, auto=None):
@@ -919,17 +921,18 @@ def add_variable(base, var, name=None, auto=None):
     name = name.replace("\\", "_divide_")
 
     if hasattr(base, name) and auto != "overwrite":
-        if auto == "cancel": return
+        if auto == "cancel":
+            return
 
         print("***Warning*** variable \"" + name +
               "\" already exists in the collection")
         val = raw_input("Are you sure that you want to overwrite? (Y/N) :")
 
         if val.upper().strip() == "N":
-            print("Assignment of variable \"" +name+ "\" cancelled")
+            print("Assignment of variable \"" + name + "\" cancelled")
             return
         else:
-            print("Assignment of variable \""+name+ "\" completed")
+            print("Assignment of variable \"" + name + "\" completed")
 
     setattr(base, name, var)
 
